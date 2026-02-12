@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dead Internet Detector — Settings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      max-width: 600px; margin: 40px auto; padding: 0 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d0d1a; color: #e0e0e0; font-size: 14px; line-height: 1.6;
+    }
+    h1 { font-size: 22px; margin-bottom: 8px; color: #fff; }
+    .subtitle { color: #666; margin-bottom: 32px; font-size: 13px; }
+    .section { margin-bottom: 28px; }
+    .section-title { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+    .setting-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .setting-label { font-size: 14px; color: #ddd; }
+    .setting-desc { font-size: 12px; color: #666; margin-top: 2px; }
+    select, input[type="text"] {
+      background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 13px;
+    }
+    .toggle-input { width: 36px; height: 20px; appearance: none; background: #333; border-radius: 10px; cursor: pointer; position: relative; transition: background 0.2s; }
+    .toggle-input:checked { background: #22c55e; }
+    .toggle-input::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
+    .toggle-input:checked::after { transform: translateX(16px); }
+    .save-btn {
+      background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; border: none;
+      padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600;
+      cursor: pointer; margin-top: 16px; transition: opacity 0.2s;
+    }
+    .save-btn:hover { opacity: 0.9; }
+    .saved-msg { color: #22c55e; font-size: 12px; margin-left: 12px; display: none; }
+    .api-section { margin-top: 20px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); }
+    .api-section h3 { font-size: 14px; margin-bottom: 8px; color: #eab308; }
+    .api-input { width: 100%; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Dead Internet Detector</h1>
+  <p class="subtitle">Configure your authenticity analysis settings</p>
+
+  <div class="section">
+    <div class="section-title">Platforms</div>
+    <div class="setting-row">
+      <div><div class="setting-label">Amazon Reviews</div><div class="setting-desc">Analyze product reviews for authenticity</div></div>
+      <input type="checkbox" class="toggle-input" id="platform-amazon" checked>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Reddit</div><div class="setting-desc">Detect bots and astroturfing (Phase 2)</div></div>
+      <input type="checkbox" class="toggle-input" id="platform-reddit" checked>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Google Maps</div><div class="setting-desc">Analyze business reviews (Phase 2)</div></div>
+      <input type="checkbox" class="toggle-input" id="platform-googlemaps" checked>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Universal Scanner</div><div class="setting-desc">Basic analysis on all websites (may impact performance)</div></div>
+      <input type="checkbox" class="toggle-input" id="platform-universal">
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Analysis Sensitivity</div>
+    <div class="setting-row">
+      <div><div class="setting-label">Detection Level</div><div class="setting-desc">Higher sensitivity flags more content but may produce more false positives</div></div>
+      <select id="sensitivity">
+        <option value="conservative">Conservative</option>
+        <option value="balanced" selected>Balanced</option>
+        <option value="aggressive">Aggressive</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Display</div>
+    <div class="setting-row">
+      <div><div class="setting-label">Show Review Badges</div><div class="setting-desc">Display trust scores on individual reviews</div></div>
+      <input type="checkbox" class="toggle-input" id="showBadges" checked>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Show Tooltips</div><div class="setting-desc">Show detailed analysis on hover</div></div>
+      <input type="checkbox" class="toggle-input" id="showTooltips" checked>
+    </div>
+  </div>
+
+  <div class="api-section">
+    <h3>🔑 Pro Features (Optional)</h3>
+    <p style="font-size: 12px; color: #888;">Add your API key to enable deep AI-powered analysis for ambiguous content. This uses the Claude API and costs approximately $0.001 per analysis.</p>
+    <input type="text" class="api-input" id="apiKey" placeholder="sk-ant-..." style="background: #0d0d1a; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px; border-radius: 6px; width: 100%; font-size: 12px; font-family: monospace;">
+  </div>
+
+  <div style="margin-top: 24px; display: flex; align-items: center;">
+    <button class="save-btn" id="saveBtn">Save Settings</button>
+    <span class="saved-msg" id="savedMsg">✓ Settings saved</span>
+  </div>
+
+  <script>
+    // Load current settings
+    chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (settings) => {
+      document.getElementById('platform-amazon').checked = settings.platforms?.amazon ?? true;
+      document.getElementById('platform-reddit').checked = settings.platforms?.reddit ?? true;
+      document.getElementById('platform-googlemaps').checked = settings.platforms?.googlemaps ?? true;
+      document.getElementById('platform-universal').checked = settings.platforms?.universal ?? false;
+      document.getElementById('sensitivity').value = settings.sensitivity || 'balanced';
+      document.getElementById('showBadges').checked = settings.showBadges ?? true;
+      document.getElementById('showTooltips').checked = settings.showTooltips ?? true;
+      if (settings.apiKey) document.getElementById('apiKey').value = settings.apiKey;
+    });
+
+    // Save settings
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const updates = {
+        platforms: {
+          amazon: document.getElementById('platform-amazon').checked,
+          reddit: document.getElementById('platform-reddit').checked,
+          googlemaps: document.getElementById('platform-googlemaps').checked,
+          universal: document.getElementById('platform-universal').checked,
+        },
+        sensitivity: document.getElementById('sensitivity').value,
+        showBadges: document.getElementById('showBadges').checked,
+        showTooltips: document.getElementById('showTooltips').checked,
+        apiKey: document.getElementById('apiKey').value || null,
+        deepScanEnabled: !!document.getElementById('apiKey').value,
+      };
+
+      chrome.runtime.sendMessage({ type: 'UPDATE_SETTINGS', data: updates }, () => {
+        const msg = document.getElementById('savedMsg');
+        msg.style.display = 'inline';
+        setTimeout(() => { msg.style.display = 'none'; }, 2000);
+      });
+    });
+  </script>
+</body>
+</html>

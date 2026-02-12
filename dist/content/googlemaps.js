@@ -1,0 +1,1 @@
+(new class{async init(){console.log("[DID] Google Maps module loaded — analysis coming in Phase 2"),chrome.runtime.sendMessage({type:"PAGE_SCORED",data:{url:window.location.href,score:{score:null,level:"INSUFFICIENT_DATA",message:"Google Maps analysis coming soon",issues:[],signalCount:0},platform:"googlemaps"}})}}).init();
