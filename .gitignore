@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor configs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Environment/secrets
+.env
+.env.local
+*.key
+*.pem
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test output
+coverage/
